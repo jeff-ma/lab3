@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>URL expander</title>
+</head>
+
+<body>
+<h1>Please enter a URL to expand <a href="{% url 'logout' %}"><button>Logout</button></a></h1>
+<form action="{% url 'expand' %}" method="POST">
+        {% csrf_token %}
+        <input type="text" type="text" name="shorter_url">
+        <input type="submit" value="Submit">
+</form>
+<br/>
+<div><b>URL must have "http://" or "https://"(e.g. https://youtu.be/k_5zELmun9E)</b></div>
+<br/>
+{% if url_list %}
+        <table width="200" border="1">
+        <tr>
+                <th scope="col">Short URL</th>
+                <th scope="col">Full URL</th>
+                <th scope="col">HTTP status</th>
+                <th scope="col">Page title</th>
+                <th scope="col">Wayback URL</th>
+                <th scope="col">Wayback timestamp</th>
+                <th scope="col">Delete</th>
+        </tr>
+        {% for url_detail in url_list %}
+        <tr>
+                <td>{{url_detail.short_url}}</td>
+                <td>{{url_detail.full_url}}</td>
+                <td>{{url_detail.http_status}}</td>
+                <td>{{url_detail.page_title}}</td>
+                {% if url_detail.wayback_url == 'none' %}
+                <td>{{url_detail.wayback_url}}</td>
+                {% else %}
+                <td><a href="{{url_detail.wayback_url}}" target="_blank">{{url_detail.wayback_url}}</a></td>
+                {% endif %}
+                <td>{{url_detail.timestamp}}</td>
+                <td><a href="{% url 'delete' url_detail.pk %}">Delete</a></td>
+        </tr>
+        {% endfor %}
+        </table>
+{% endif %}
+
+</body>
+</html>
