@@ -24,6 +24,7 @@
                 <th scope="col">Page title</th>
                 <th scope="col">Wayback URL</th>
                 <th scope="col">Wayback timestamp</th>
+                <th scope="col">Screenshot</th>
                 <th scope="col">Delete</th>
         </tr>
         {% for url_detail in url_list %}
@@ -38,6 +39,11 @@
                 <td><a href="{{url_detail.wayback_url}}" target="_blank">{{url_detail.wayback_url}}</a></td>
                 {% endif %}
                 <td>{{url_detail.timestamp}}</td>
+                {% if url_detail.image == 'none' %}
+                <td>{{url_detail.image}}</td>
+                {% else %}
+                <td><a href="https://s3.amazonaws.com/info344lab3/{{url_detail.image}}" target="_blank">{{url_detail.image}}</a></td>
+                {% endif %}
                 <td><a href="{% url 'delete' url_detail.pk %}">Delete</a></td>
         </tr>
         {% endfor %}
