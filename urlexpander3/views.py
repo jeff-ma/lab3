@@ -12,6 +12,7 @@ from .serializers import Url_AddressSerializer
 from ratelimit.decorators import ratelimit
 import requests
 from boto.s3.connection import S3Connection
+from boto.s3.connection import Bucket
 from boto.s3.key import Key
 from mysite.settings import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
 
@@ -78,9 +79,41 @@ def url_listing(request, format=None):
 		return Response(serializer.data)
 
 	elif request.method == 'POST':
+		shorter_url = request.data['short_url']
+		html = urlopen(shorter_url)
+		soup = BeautifulSoup(html, 'html.parser')
+		url = Url_Address()
+		url.short_url = shorter_url
+		url.full_url = html.geturl()
+		url.http_status = html.getcode()
+		url.page_title = soup.html.head.title.contents[0]
+		wayback_api = "https://archive.org/wayback/available?url=" + url.full_url
+		response = requests.get(wayback_api)
+		data = response.json()
+		if len(data['archived_snapshots']) > 0:
+			url.wayback_url = data['archived_snapshots']['closest']['url']
+			url.timestamp = data['archived_snapshots']['closest']['timestamp']
+			request.data['wayback_url'] = url.wayback_url
+			request.data['timestamp'] = url.timestamp
+		url.save()
+		api_key = 'ak-bd2y1-5f3zw-5n7qq-wz0q6-j3str'
+		phantom_url = "https://PhantomJsCloud.com/api/browser/v2/" + api_key + "/?request={url:'" + url.full_url + "', renderType:'jpg',outputAsJson:false}"
+		image = requests.get(phantom_url)
+		connection = S3Connection(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+		bucket = connection.get_bucket('info344lab3')
+		k = Key(bucket)
+		k.key = 'image' + str(url.id) + '.jpg'
+		k.set_metadata('Content-Type', 'image/jpg')
+		k.set_contents_from_string(image.content)
+		url.image = k.key
+		url.save()
+		request.data['full_url'] = url.full_url
+		request.data['http_status'] = url.http_status
+		request.data['page_title'] = url.page_title
+		request.data['image'] = url.image
 		serializer = Url_AddressSerializer(data=request.data)
 		if serializer.is_valid():
-			serializer.save()
+#			serializer.save()
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
 	else:
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -99,6 +132,11 @@ def url_detail(request, pk, format=None):
 		return Response(serializer.data)
 
 	elif request.method == 'DELETE':
+		connection = S3Connection(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+		bucket = connection.get_bucket('info344lab3')
+		k = Key(bucket)
+		k.key = 'image' + str(pk) + '.jpg'
+		bucket.delete_key(k)
 		url.delete()
 		return Response(status=status.HTTP_204_NO_CONTENT)
 	else:

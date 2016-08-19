@@ -127,7 +127,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 
-
 AWS_STORAGE_BUCKET_NAME = 'info344lab3'
 
 STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
