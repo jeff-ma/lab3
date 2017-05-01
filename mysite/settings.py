@@ -127,6 +127,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 
+
 AWS_STORAGE_BUCKET_NAME = 'info344lab3'
 
 STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
@@ -136,4 +137,4 @@ AWS_DEFAULT_ACL =''
 STATIC_URL = 'http://s3.amazonaws.com/%s' % AWS_STORAGE_BUCKET_NAME + '/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-LOGIN_REDIRECT_URL = '/'
+#LOGIN_REDIRECT_URL = '/'
