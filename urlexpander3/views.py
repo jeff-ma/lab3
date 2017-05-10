@@ -113,7 +113,8 @@ def expand(request):
 	wayback_data = wayback_response.json()
 	if len(wayback_data['archived_snapshots']) > 0:
 		url.wayback_url = wayback_data['archived_snapshots']['closest']['url']
-		url.timestamp = wayback_data['archived_snapshots']['closest']['timestamp']
+		wayback_timestamp = wayback_data['archived_snapshots']['closest']['timestamp']
+		url.timestamp = dateutil.parser.parse(wayback_timestamp[:8]).date() 
 	url.save()
 	api_key = 'ak-bd2y1-5f3zw-5n7qq-wz0q6-j3str'
 	phantom_url = "https://PhantomJsCloud.com/api/browser/v2/" + api_key + "/?request={url:'" + url.full_url + "', renderType:'jpg',outputAsJson:false}"
